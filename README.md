@@ -81,7 +81,10 @@ div>
   - 해당 메소드가 반환하는 값이 addAttribute 됨.
   - 이는 해당 메소드를 가지고 있는 클래스 내부 전체에 다 기능함.
   - 성능상 다른 클래스로 빼서 static 으로 선언하면 좋겠지만, 별 차이 안나니까 그냥 써도 됨.
-
+- Lombok 생성자 생성
+  - @NoArgsConstructor : 인자 안받는 빈 생성자 생성
+  - @AllArgsConstructor : 모든 필드를 인자로 받는 생성자 생성
+  - @RequiredArgsConstructor : final 선언 혹은 @NonNull 선언된 필드를 인자로 받는 생성자 생성
 
 #### 메시지, 국제화
 
