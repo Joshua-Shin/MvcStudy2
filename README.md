@@ -99,11 +99,28 @@ div>
 #### 검증1 : Validation
 - BindingResult
   - @ModelAttribute로 잡은 객체에 요청값이 적절히 안들어왔을 경우 에러 사항들을 bindingResult에 담아줌.
+  - 꼭! @ModelAttribute 매개변수 바로 다음에 매개변수로 들어와야함.
   - bindingResult.addError() 를 통해 ObjectError와 FieldError 등을 수동으로 추가할 수 있음
   - 해서 메소드 안쪽 본격 로직이 시작되기 전에 if(bindingResult.hasError()) 를 검사하며 에러가 있을 경우 실패 로직을 처리해버림.
-  - 그러나 이게 수동으로 등록하고 뭐 하고 이런것들이 너무너무너무 번거로워
+  - 타임리프 스프링 검증 오류 통합 기능
+    - #fields : #fields 로 BindingResult 가 제공하는 검증 오류에 접근할 수 있다.
+    - th:errors : 해당 필드에 오류가 있는 경우에 태그를 출력한다. th:if 의 편의 버전이다. 
+    - th:errorclass : th:field 에서 지정한 필드에 오류가 있으면 class 정보를 추가한다.
+    - 글로벌 오류 처리
+    ```
+    <div th:if="${#fields.hasGlobalErrors()}">
+      <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p> 
+    </div>
+    ```
+    - 필드 오류 처리
+    ```
+    <input type="text" id="itemName" th:field="*{itemName}" th:errorclass="field-error" class="form-control" placeholder="이름을 입력하세요">
+    <div class="field-error" th:errors="*{itemName}">
+        상품명 오류
+    </div>
+    ```
+  - 그러나 에러를 bindingResult에 수동으로 등록하고 검증사항을 하나하나 자바 코드로 구현하고 이런것들이 너무너무너무 번거로워
   - 해서 나온게 Bean Validation
-  - 해당 에러를 담은 모델을 뷰에서 어떻게 받는지는 강의 다시 봐야할듯. 강의 앞부분임. th:error.. 로 하는데.
 
 #### 검증2 : Bean Validation
 - Validaion 라이브러리 있음. start.spring.io에서 처음 프로젝트 generate할때 추가하면됨.
@@ -112,16 +129,25 @@ div>
 - 오류가 발생했을떄 에러메시지를 내가 따로 명시해줘도 되고, spring에서 해당 에노테이션에 맞는 기본 메시지도 등록되어있으며,
 - error.properties에서 단계별로 메시지들을 관리해놔도 됨.
   - NotBlank.객체.필드명=상품의 이름이 공백이면 안됩니다
-- 다만, 필드 오류는 이렇게 필드마다 간편하게 검증 사항을 적용할 수 있는데, 오브젝트 오류는 방법이 없음. @ScriptAssert()를 가지고 할 수 있긴한데, 그냥 순수 자바 코드로 구현하는게 나음.
-  - 오브젝트 오류의 예) : 상품 가격 x 상품 수량 <= 10000000원
+- 다만, 필드 오류는 이렇게 필드마다 간편하게 검증 사항을 적용할 수 있는데, 오브젝트 오류는 방법이 없음. @ScriptAssert()를 가지고 할 수 있긴한데, 그냥 자바 코드로 bindingResult에 수동으로 에러 입력해주는게 나음.
+  ```        
+  if (item.getPrice() != null && item.getQuantity() != null) {
+      int resultPrice = item.getPrice() * item.getQuantity();
+      if (resultPrice < 10000) {
+          bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+      } 
+  }
+  ```
 - 등록할때의 필드 검증 사항과 수정할떄의 필드 검증 사항이 다를 경우. (사실 다를 경우가 훨씬 많음)
   - groups라는 개념으로 해결할 수 있는데 그것보다는 차라리 폼 전용 객체를 따로 만드는게 나은 판단
   - 현재 item 하나로만 controller에서 요청 받아서 repository로 넘겨서 저장하고 수정하고 다 했는데, 이는 별로 바람직하지는 않음.
   - 따라서 ItemSaveForm, ItemUpdateForm, Item을 따로 분리.
   - 검증 에노테이션을 각 상황에 맞춰 따로따로 줄 수 있음
   - 물론 controller에서든 어디에서든 ItemSaveForm을 Item으로 변환하는 과정이 필요하겠지.
+  - @ModelAttribute("item") ItemSaveForm form
+    - @ModelAttribute에 따로 명시해주는거 주의. 따로 명시 안해주면 클래스명 맨 앞글자만 소문자로 변경된 itemSaveForm을 키값으로 model에 담김.
 - @ModelAttribute vs @RequestBody
-  - @ModelAttribute 는 필드 하나하나 검증할 수 있음
+  - @ModelAttribute 는 각각의 필드에 타입 변환 시도. 성공하면 다음으로. 실패하면 typeMismatch 로 FieldError 추가. 변환에 성공한 필드만 BeanValidation 적용.
   - @RequestBody는 일단 http body로 요청이 들어온것을 http 메시지 컨버터를 통해 컨버팅하고, 이 json을 객체로 바꾼후에, 검증이 진행되는데, json이 객체로 바뀌지 않으면 예를 들어 입력 타입 자체가 다를 경우 검증이 진행이 안됨. 애초에 컨트롤러가 실행이 안되는 상황이 되어버림. 때문에 이 상황에서는.. 어떻게 해야하는지 뒤에 예외처리 파트에서 나온대.
   
 #### 로그인 처리1 : 쿠키, 세션
