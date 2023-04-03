@@ -27,15 +27,11 @@ public String date(Model model) {
 ```
 -->
 
-```
-@{/hello/{param1}(param1=${param1}, param2=${param2})}
-그 결과 /hello/data1?param2=data2
-```
 - 리터럴
   - 문자는 기본적으로 ' ' 으로 감싸야함.
   - 그러나 공백없는 한 단어는 ' ' 생략 가능
   - th:text="hello"
-  - th:text-"'hello World!'"
+  - th:text="'hello World!'"
 
 <!--
 ```
@@ -65,7 +61,7 @@ public String date(Model model) {
 div>
 ```
 -->
-- 나머지 아주 다양한것들이 있는데, 필요하면 그냥 레퍼런스 문서 보거나, 챕터 마지막 정리 강의 보거나 하자
+- 나머지 아주 다양한 타임리프 문법이 있는데, 필요하면 그냥 레퍼런스 문서 보거나, 챕터 마지막 정리 강의 보거나 하자
 
 #### 타임리프 : 스프링 통합과 폼
 - 부모태그에 th:object="${item}" 라고 선언하면 th:field="${item.name}" 이라고 하는 대신 th:field="*{name}" 만 해줘도 됨.
