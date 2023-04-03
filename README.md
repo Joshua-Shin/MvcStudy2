@@ -85,18 +85,18 @@ div>
 #### 메시지, 국제화
 - 메시지: 뷰에 입력하는 문자들을 하드코딩 하는게 아니라, 마치 자바에서 오류메시지 enum 클래스 만들어서 담아두는것 처럼, 띄울 문자를 매핑해두면, 모든 페이지에서의 '상품이름'을 '상품명'으로 수정 하기 수월하겠지. message.properties 만들어서 메시지코드랑 메시지내용이랑 키 벨류로 매핑해둠.
 - 타임리프에서는 #{}
-- 스프링부트에서 해당 값을 가져오는 MessageSource 만들어줌. 그냥 Autowired만 해주면 됨.
+- 스프링부트에서 해당 값을 가져오는 MessageSource 만들어줌. 그냥 Autowired만 해주면 됨. 근데 어차피 뷰로 바로 보낼 메시지들이라 자바코드내에서 확인할 필요가 있나. 아 테스트코드 작성할때.
 - 국제화: message.properties를 국가별로 다르게 관리해서 http accept-lang 이나 locale에 따라 그에 맞는것을 보내주면 변경되겠지. 
 - ms.getMessage(code, args, defaultMessage, locale) 호출하면, locale에 맞는 message.properites 찾아서 code에 매핑된 문자열 벨류값 반환함
-- Test 코드 예외처리
-  - Assertions.assertThatThrownBy( () -> function()).isIstanceOf(예외.class);
+- **Test 코드 예외처리**
+  - Assertions.assertThatThrownBy( () -> function()).isInstanceOf(예외.class);
 
 
 #### 검증1 : Validation
 - BindingResult
   - @ModelAttribute로 잡은 객체에 요청값이 적절히 안들어왔을 경우 에러 사항들을 bindingResult에 담아줌.
-  - 꼭! @ModelAttribute 매개변수 바로 다음에 매개변수로 들어와야함.
-  - bindingResult.addError() 를 통해 ObjectError와 FieldError 등을 수동으로 추가할 수 있음
+  - 꼭! @ModelAttribute 매개변수 바로 다음에 선언되어야함.
+  - bindingResult.addError() 를 통해 ObjectError와 FieldError 등을 수동으로 추가할 수 있음.
   - 해서 메소드 안쪽 본격 로직이 시작되기 전에 if(bindingResult.hasError()) 를 검사하며 에러가 있을 경우 실패 로직을 처리해버림.
   - 타임리프 스프링 검증 오류 통합 기능
     - #fields : #fields 로 BindingResult 가 제공하는 검증 오류에 접근할 수 있다.
