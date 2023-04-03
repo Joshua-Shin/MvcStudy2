@@ -147,6 +147,29 @@ div>
   - @RequestBody는 일단 http body로 요청이 들어온것을 http 메시지 컨버터를 통해 컨버팅하고, 이 json을 객체로 바꾼후에, 검증이 진행되는데, json이 객체로 바뀌지 않으면 예를 들어 입력 타입 자체가 다를 경우 검증이 진행이 안됨. 애초에 컨트롤러가 실행이 안되는 상황이 되어버림. 때문에 이 상황에서는.. 어떻게 해야하는지 뒤에 예외처리 파트에서 나온대.
   
 #### 로그인 처리1 : 쿠키, 세션
+- 패키지 구조 설계
+  - 일단 크게 domain과 web을 분리
+  - 도메인 : 화면, UI, 기술 인프라 등등의 영역은 제외한 시스템이 구현해야 하는 핵심 비즈니스 업무 영역
+  - 둘의 의존관계가 단방향. web은 domain을 알지만, domain은 web을 모르게.
+  - web이 완전히 삭제되어도 domain에는 영향이 없게.
+  - web에는 ItemSaveForm, ItemEditForm, ItemController
+  - domain에는 Item, ItemRepository
+  - 패키지 구조 설계에 대한 더 자세한 내용은 (https://cheese10yun.github.io/spring-guide-directory/)
+- DTO
+  - Data Transfer Object: 계층간 데이터 전송을 위해 도메인 모델 대신 사용되는 객체
+  - 순수하게 데이터를 저장. Getter, Setter가 있고 비즈니스 로직은 있어서는 안돼.
+- DAO
+  - Data Access Object: 실제 DB에 접근하는 객체. Repository와 비슷한 기능과 역할을 하는듯. 정확히는 모르겠네.
+- 적절한 쿠키를 가지고 있냐 없냐에 따라 return 해주는 뷰 페이지가 다르게.
+- 쿠키만을 가지고 로그인 처리를 하면, 아주 쉽게 조작할 수 있어. 보안상 문제가 커. 때문에 나온 개념이 세션.
+- 최대한 중요한 정보는 서버가 가지고 있고, 임의의 아주 긴 문자열과 객체를 맵핑해둔 세션저장소를 서버가 가지고서 관리하여 세션값을 쿠키에 넣어서 주고받는거야.
+- 만료값도 설정해주고.
+- 쿠키나 세션이나 개념은 일단 알겠는데 코드로 구현된 로직이 잘 이해가 안가네. 내일 다시한번 듣자.
+- @NotNull vs @NotBlank vs @NotEmpty
+  - @NotNull: null만 허용하지 않음. "" 나 " "는 허용.
+  - @NotEmpty: null과 "" 둘다 허용하지 않음. " "는 허용
+  - @NotBlank: null, "", " " 모두 허용하지 않음. 가장 강도가 높네
+
 
 #### 로그인 처리2 : 필터, 인터셉터
 
