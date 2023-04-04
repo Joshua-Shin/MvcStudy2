@@ -158,6 +158,7 @@ div>
 - DTO
   - Data Transfer Object: 계층간 데이터 전송을 위해 도메인 모델 대신 사용되는 객체
   - 순수하게 데이터를 저장. Getter, Setter가 있고 비즈니스 로직은 있어서는 안돼.
+  - JPA 로드맵 api2편에서 본격적으로 나옴
 - DAO
   - Data Access Object: 실제 DB에 접근하는 객체. Repository와 비슷한 기능과 역할을 하는듯. 정확히는 모르겠네.
 - 적절한 쿠키를 가지고 있냐 없냐에 따라 return 해주는 뷰 페이지가 다르게.
