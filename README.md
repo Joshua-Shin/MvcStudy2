@@ -155,17 +155,20 @@ div>
   - web에는 ItemSaveForm, ItemEditForm, ItemController
   - domain에는 Item, ItemRepository
   - 패키지 구조 설계에 대한 더 자세한 내용은 (https://cheese10yun.github.io/spring-guide-directory/)
+
+- 적절한 쿠키를 가지고 있냐 없냐에 따라 return 해주는 뷰 페이지가 다르게.
+- 쿠키만을 가지고 로그인 처리를 하면, 아주 쉽게 조작할 수 있어. 보안상 문제가 커. 때문에 나온 개념이 세션.
+- 최대한 중요한 정보는 서버가 가지고 있고, 임의의 아주 긴 문자열(세션id)과 객체를 맵핑해둔 세션저장소를 서버가 가지고서 관리하여 세션값을 쿠키에 넣어서 주고받는거야.
+- spring 에서 제공하는 세션의 경우 가장 마지막 세션 접근 시간을 기준으로 30분이 지나면 WAS에서 해당 세션을 만료시켜줌. 당연히 타임아웃값 다르게 설정해줄 수 있고.
+- 실습에서는 세션저장소에 세션id와 회원객체를 그대로 맵핑해뒀는데, 보통 세션저장소는 db에 두는게 아니라 메모리에 두기에 메모리 관리도 해줘야돼. 때문에 회원객체를 그대로 두는게 아니라, 정말 딱 로그인에 필요한 자주 쓰는 필드만 담은 객체를 핏하게 따로 두는게 좋긴함.
+- 직접 세션값을 만들고 저장소를 만들고 HttpSevletRequest랑 HttpSevletResponse로 addCookie 해줘서 주고받고 하면 되는데, 
+- @SessionAttribute(name = "sessionId", required = false) Member loginMember 이런식으로 인자를 받으면 세션 다 뒤져서 있으면 loginMember에 넣어주고 없으면 null값 넣어줌.
 - DTO
   - Data Transfer Object: 계층간 데이터 전송을 위해 도메인 모델 대신 사용되는 객체
   - 순수하게 데이터를 저장. Getter, Setter가 있고 비즈니스 로직은 있어서는 안돼.
   - JPA 로드맵 api2편에서 본격적으로 나옴
 - DAO
   - Data Access Object: 실제 DB에 접근하는 객체. Repository와 비슷한 기능과 역할을 하는듯. 정확히는 모르겠네.
-- 적절한 쿠키를 가지고 있냐 없냐에 따라 return 해주는 뷰 페이지가 다르게.
-- 쿠키만을 가지고 로그인 처리를 하면, 아주 쉽게 조작할 수 있어. 보안상 문제가 커. 때문에 나온 개념이 세션.
-- 최대한 중요한 정보는 서버가 가지고 있고, 임의의 아주 긴 문자열과 객체를 맵핑해둔 세션저장소를 서버가 가지고서 관리하여 세션값을 쿠키에 넣어서 주고받는거야.
-- 만료값도 설정해주고.
-- 쿠키나 세션이나 개념은 일단 알겠는데 코드로 구현된 로직이 잘 이해가 안가네. 내일 다시한번 듣자.
 - @NotNull vs @NotBlank vs @NotEmpty
   - @NotNull: null만 허용하지 않음. "" 나 " "는 허용.
   - @NotEmpty: null과 "" 둘다 허용하지 않음. " "는 허용
