@@ -118,7 +118,7 @@ div>
   - 그러나 에러를 bindingResult에 수동으로 등록하고 검증사항을 하나하나 자바 코드로 구현하고 이런것들이 너무너무너무 번거로워
   - 해서 나온게 Bean Validation
 
-#### 검증2 : Bean Validation (여기서부터 다시 들어야할듯)
+#### 검증2 : Bean Validation
 - Validaion 라이브러리 있음. start.spring.io에서 처음 프로젝트 generate할때 추가하면됨.
 - 객체 필드 위에다가 에노테이션 명시하면 그에 맞게 검증해주고, 검증 안맞으면 bindingResult에 에러내용 넣어줌. 정말 편하네
 - @NotBlank(message="공백이면 안돼요"), @NotNull, @Range(min=1000, max=100000), @Max(9999),, 등등 이메일, 신용카드번호 등등 웬만한 유형은 다 있음.
@@ -198,8 +198,47 @@ div>
 
 
 #### 예외 처리와 오류 페이지
+- try catch로 중간에 에러를 잡아주지 않으면 핸들러에서 WAS까지 에러가 돌라감
+- 서블릿 예외 처리 2가지
+  - throw new RuntimeExcepion(); : 500 에러 페이지 보여줌
+  - response.sendError(에러코드) : 입력한 에러코드에 맞는 에러 페이지 보여줌.
+- 서블릿 컨테이너가 제공하는 기본 오류 페이지는 너무 구림. 서비스 망한것처럼 보임.
+- WAS까지 올라온 에러는 해당 에러에 맞는 등록된 페이지가 있는지 확인하고, 없으면 기본 그 오류 페이지 보여주고, 커스텀한 페이지가 등록되어있다면, 그 페이지를 다시 부르게 됨.
+- 마치 http 요청이 온것처럼 was서부터 핸들러까지 쭉 해당 페이지를 부르러 호출하며 내려감. 물론 실제로 http 요청은 아니고 클라이언트는 모르게 서버내부에서만 진행되는 프로세스임.
+- 다만, 다시 핸들러까지 호출하러 내려갈때, 필터와 인터셉터는 또 호출할 필요 없긴함.
+- 필터는 DispatchType 으로 중복 호출 제거 ( dispatchType=REQUEST )
+- 인터셉터는 경로 정보로 중복 호출 제거( excludePathPatterns("/error-page/**") )
+- 전체 흐름
+  - 1_ WAS(/error-ex, dispatchType=REQUEST) -> 필터 -> 서블릿 -> 인터셉터 -> 컨트롤러
+  - 2_ WAS(여기까지 전파) <- 필터 <- 서블릿 <- 인터셉터 <- 컨트롤러(예외발생)
+  - 3_ WAS 오류 페이지 확인
+  - 4_ WAS(/error-page/500, dispatchType=ERROR) -> 필터(x) -> 서블릿 -> 인터셉터(x) -> 컨트롤러(/error-page/500) -> View
+- 서블릿에서 처리하는건 너무너무 번거로워. 에러마다 오류페이지 등록하고 뭐하고...아이고.. 스프링 부트는 자동화 가능... 그니까 전체 흐름만 파악하고 전체 구현 방법은 스프리부트 활용한는것만 기억
+- 이미 BasicErrorController에 기본 로직이 다 구현되어있어. 결국 아래 처리순서에 따라 페이지만 만들면 알아서 컨트롤러가 저 페이지 부르고 다 함.
+- BasicErrorController 의 처리 순서
+- 1_ 뷰템플릿 
+  - resources/templates/error/500.html 
+  - resources/templates/error/5xx.html
+- 2. 정적리소스(static,public) 
+  - resources/static/error/400.html
+  - resources/static/error/404.html
+  - resources/static/error/4xx.html 
+- 3_ 적용 대상이 없을 때 뷰 이름(error)
+  - resources/templates/error.html 
+- 진짜 이 단원은 설명이 존나게 길었지만 결론은 그냥 에러페이지 /error/xxx.html,,,등록하면 돼...
+
 
 #### API 예외 처리
+- 뷰를 보내는게 아니라 api를 보내야할 경우, 에러가 발생하면 이전에 설정해둔 그 오류 페이지가 전달되면 안되겠지.
+- 어..이것도 BasicErrorController가 알아서,, json으로 요청 보내면 json으로, html 요청 보내면 html 오류페이지 알아서 다 해주네..
+- @Requestmapping(produces=MediaType..) 미디어타입을 json으로 한거, text로 한거.. 같은 url에 다른 미디어타입을 매핑해두어서 그에 맞는 타입을 반환해주는 원리.
+- 그러나, api 오류처리는 html 페이지 보여주는거랑 다르게 더 세밀하게 처리해줘야돼. api 전송하는 곳마다 서로 약속한 규약이 다를 수도 있고, 도메인마다 전달해야될것들도 다르기 때문에.
+- 때문에, BasicErrorController로는 오류 페이지 뿌리는것만 하고 api는 ExceptionResolver를 활용.
+- ExceptionResolver
+<img width="814" alt="스크린샷 2023-04-05 오후 8 29 51" src="https://user-images.githubusercontent.com/93418349/230067794-84e5e2d3-c3b8-49bc-8c33-aa5c73ee42be.png">
+- ExceptionResolver를 사용하면 컨트롤러에서 예외가 발생해도 ExceptionResolver 에서 예외를 처리해버린다. 따라서 예외가 발생해도 서블릿 컨테이너까지 예외가 전달되지 않고, 스프링 MVC에서 예외 처리는 끝이난다. 결과적으로 WAS 입장에서는 정상 처리가 된 것이다. 이렇게 예외를 이곳에서 모두 처리할 수 있다는 것이 핵심이다. 서블릿 컨테이너까지 예외가 올라가면 복잡하고 지저분하게 추가 프로세스가 실행된다. 반면에 ExceptionResolver 를 사용하면 예외처리가 상당히 깔끔해진다. 그런데 직접 ExceptionResolver 를 구현하려고 하니 상당히 복잡하다. 지금부터 스프링이 제공하는 ExceptionResolver 들을 알아보자.
+- 
+
 
 #### 스프링 타입 컨버터
 
