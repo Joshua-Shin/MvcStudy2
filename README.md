@@ -155,7 +155,6 @@ div>
   - web에는 ItemSaveForm, ItemEditForm, ItemController
   - domain에는 Item, ItemRepository
   - 패키지 구조 설계에 대한 더 자세한 내용은 (https://cheese10yun.github.io/spring-guide-directory/)
-
 - 적절한 쿠키를 가지고 있냐 없냐에 따라 return 해주는 뷰 페이지가 다르게.
 - 쿠키만을 가지고 로그인 처리를 하면, 아주 쉽게 조작할 수 있어. 보안상 문제가 커. 때문에 나온 개념이 세션.
 - 최대한 중요한 정보는 서버가 가지고 있고, 임의의 아주 긴 문자열(세션id)과 객체를 맵핑해둔 세션저장소를 서버가 가지고서 관리하여 세션값을 쿠키에 넣어서 주고받는거야.
