@@ -219,7 +219,7 @@ div>
 - 1_ 뷰템플릿 
   - resources/templates/error/500.html 
   - resources/templates/error/5xx.html
-- 2. 정적리소스(static,public) 
+- 2_ 정적리소스(static,public) 
   - resources/static/error/400.html
   - resources/static/error/404.html
   - resources/static/error/4xx.html 
@@ -237,7 +237,7 @@ div>
 - ExceptionResolver
 <img width="814" alt="스크린샷 2023-04-05 오후 8 29 51" src="https://user-images.githubusercontent.com/93418349/230067794-84e5e2d3-c3b8-49bc-8c33-aa5c73ee42be.png">
 - ExceptionResolver를 사용하면 컨트롤러에서 예외가 발생해도 ExceptionResolver 에서 예외를 처리해버린다. 따라서 예외가 발생해도 서블릿 컨테이너까지 예외가 전달되지 않고, 스프링 MVC에서 예외 처리는 끝이난다. 결과적으로 WAS 입장에서는 정상 처리가 된 것이다. 이렇게 예외를 이곳에서 모두 처리할 수 있다는 것이 핵심이다. 서블릿 컨테이너까지 예외가 올라가면 복잡하고 지저분하게 추가 프로세스가 실행된다. 반면에 ExceptionResolver 를 사용하면 예외처리가 상당히 깔끔해진다. 그런데 직접 ExceptionResolver 를 구현하려고 하니 상당히 복잡하다. 지금부터 스프링이 제공하는 ExceptionResolver 들을 알아보자.
-- 
+- 일단 들어..
 
 
 #### 스프링 타입 컨버터
