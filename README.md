@@ -194,8 +194,7 @@ div>
   - afterCompletion: 뷰 랜더링 마치고 http 응답 보내고 나서 호출됨. 단 핸들러에서 예외 터져도 호출됨. 어떤 예외가 발생했는지 로그로 찍어볼 수 있음
   - spring mvc 전용이기에 필터보다 인터셉터가 여러모로 더 좋아
   - @Configuration 클래스에 implements WebMvcConfigurer 구현해서 등록..
-- 스프링 인터셉터 기본 흐름
-<img width="819" alt="스크린샷 2023-04-06 오전 9 19 16" src="https://user-images.githubusercontent.com/93418349/230241942-723d30a6-f9f2-4ddb-be58-56a8931a3836.png">
+- 스프링 인터셉터 기본 흐름 <br> <img width="819" alt="스크린샷 2023-04-06 오전 9 19 16" src="https://user-images.githubusercontent.com/93418349/230241942-723d30a6-f9f2-4ddb-be58-56a8931a3836.png">
 - 다시 정리 
   - 로그인 처리는 '쿠키, 세션, 필터, 인터셉터' 이 네가지의 개념이 필요.
   - 나는 로그인 한 사용자입니다 라는것을 인증해줄 수 있는 기능이 쿠키.
