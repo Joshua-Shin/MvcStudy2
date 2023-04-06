@@ -289,8 +289,31 @@ public ErrorResult exHandle(Exception e) {
   - @ControllerAdvice("org.example.controllers") // 패지키 범위로 지정 // 이걸 많이 쓰는듯
   - @ControllerAdvice(assignableTypes = {ControllerInterface.class, AbstractController.class}) // 특정 클래스로 지정.
   
-
-
 #### 스프링 타입 컨버터
+- @ModelAttribute, @RequestParam, @PathVariable, 뷰 템플릿 등에서 이미 스프링이 알아서 문자를 숫자로 숫자를 문자로 타입 바꿔주고 있음.
+- 이는 HttpMessageConverter와 관련 없는 서비스임. HttpMessageConverter 얘는 http body 메시지에 있는 json을 객체로 객체를 json으로 바꿔주는거야.
+- 어노테이션을 활용하여 포맷터 적용하기. 양방향으로 변환됨. 타임리프에서는 중괄호를 두개 사용하면 ${{ }} 내가 설정한 포맷터가 적용됨. th:field는 자동으로 컨버팅 해주고.
+  ```
+  @NumberFormat(pattern = "###,###")
+  private Integer number;
+  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  private LocalDateTime localDateTime;
+  ```
 
 #### 파일 업로드
+- @RequestParam MultipartFile file 로 파일 가져올 수 있고.
+- ```
+  if (!file.isEmpty()) {
+      String fullPath = fileDir + file.getOriginalFilename(); 
+      file.transferTo(new File(fullPath));
+  }
+  ```
+- fileDir: 파일을 저장할 내 로컬 경로.
+- file.getOriginalFilename() : 업로드 파일 명
+- file.transferTo(...): 파일 저장
+- 파일은 데이터 베이스에 저장하는게 아니라, 스토리지에 저장하는거. AWS를 이용하는 경우 S3에 저장. DB에는 파일 자체를 저장하는게 아니라 파일 경로를 저장함.
+- html input 속성중 multiple="multiple" 해주면 파일을 다중 선택 할 수 있음.
+
+
+
+
