@@ -243,8 +243,7 @@ div>
 - @Requestmapping(produces=MediaType..) 미디어타입을 json으로 한거, text로 한거.. 같은 url에 다른 미디어타입을 매핑해두어서 그에 맞는 타입을 반환해주는 원리.
 - 그러나, api 오류처리는 html 페이지 보여주는거랑 다르게 더 세밀하게 처리해줘야돼. api 전송하는 곳마다 서로 약속한 규약이 다를 수도 있고, 도메인마다 전달해야될것들도 다르기 때문에.
 - 때문에, BasicErrorController로는 오류 페이지 뿌리는것만 하고 api는 ExceptionResolver를 활용.
-- ExceptionResolver
-<img width="814" alt="스크린샷 2023-04-05 오후 8 29 51" src="https://user-images.githubusercontent.com/93418349/230067794-84e5e2d3-c3b8-49bc-8c33-aa5c73ee42be.png">
+- ExceptionResolver <br> <img width="814" alt="스크린샷 2023-04-05 오후 8 29 51" src="https://user-images.githubusercontent.com/93418349/230067794-84e5e2d3-c3b8-49bc-8c33-aa5c73ee42be.png">
 - ExceptionResolver를 사용하면 컨트롤러에서 예외가 발생해도 ExceptionResolver 에서 예외를 처리해버린다. 따라서 예외가 발생해도 서블릿 컨테이너까지 예외가 전달되지 않고, 스프링 MVC에서 예외 처리는 끝이난다. 결과적으로 WAS 입장에서는 정상 처리가 된 것이다. 이렇게 예외를 이곳에서 모두 처리할 수 있다는 것이 핵심이다. 서블릿 컨테이너까지 예외가 올라가면 복잡하고 지저분하게 추가 프로세스가 실행된다. 반면에 ExceptionResolver 를 사용하면 예외처리가 상당히 깔끔해진다. 그런데 직접 ExceptionResolver 를 구현하려고 하니 상당히 복잡하다. 지금부터 스프링이 제공하는 ExceptionResolver 들을 알아보자.
 - 정리하면, 예외 상황일때 오류 페이지 보낼꺼면 BasicErrorController, api 보낼거면 ExceptionResolver.
 - 그리고 ExceptionResolver는 예외 발생시 WAS까지 다시 왔다 갔다 하는게 아니라 위에 이미지처럼 중간에 잘 해결해줌.
