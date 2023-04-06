@@ -247,6 +247,49 @@ div>
 - ExceptionResolver를 사용하면 컨트롤러에서 예외가 발생해도 ExceptionResolver 에서 예외를 처리해버린다. 따라서 예외가 발생해도 서블릿 컨테이너까지 예외가 전달되지 않고, 스프링 MVC에서 예외 처리는 끝이난다. 결과적으로 WAS 입장에서는 정상 처리가 된 것이다. 이렇게 예외를 이곳에서 모두 처리할 수 있다는 것이 핵심이다. 서블릿 컨테이너까지 예외가 올라가면 복잡하고 지저분하게 추가 프로세스가 실행된다. 반면에 ExceptionResolver 를 사용하면 예외처리가 상당히 깔끔해진다. 그런데 직접 ExceptionResolver 를 구현하려고 하니 상당히 복잡하다. 지금부터 스프링이 제공하는 ExceptionResolver 들을 알아보자.
 - 정리하면, 예외 상황일때 오류 페이지 보낼꺼면 BasicErrorController, api 보낼거면 ExceptionResolver.
 - 그리고 ExceptionResolver는 예외 발생시 WAS까지 다시 왔다 갔다 하는게 아니라 위에 이미지처럼 중간에 잘 해결해줌.
+- 그리고 이 ExceptionResolver 중에 스프링에서는 가장 높은 우선순위로 작동하는게 ExceptionHandlerExceptionResolver 인데 얘를 @ExceptionHandler를 통해 쉽게 가져다 사용할 수 있음
+- @ExceptionHandler를 통한 예외 처리
+  - IllegalArgumentException 처리
+  ```
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ErrorResult illegalExHandle(IllegalArgumentException e) {
+      log.error("[exceptionHandle] ex", e);
+      return new ErrorResult("BAD", e.getMessage());
+  }
+  ```
+ - 실행 흐름
+컨트롤러를 호출한 결과 IllegalArgumentException 예외가 컨트롤러 밖으로 던져진다. 예외가 발생했으로 ExceptionResolver 가 작동한다. 가장 우선순위가 높은 ExceptionHandlerExceptionResolver 가 실행된다.
+ExceptionHandlerExceptionResolver 는 해당 컨트롤러에 IllegalArgumentException 을 처리할 수 있는 @ExceptionHandler 가 있는지 확인한다.
+illegalExHandle() 를 실행한다. @RestController 이므로 illegalExHandle() 에도 @ResponseBody 가 적용된다. 따라서 HTTP 컨버터가 사용되고, 응답이 다음과 같은 JSON으로 반환된다.
+@ResponseStatus(HttpStatus.BAD_REQUEST) 를 지정했으므로 HTTP 상태 코드 400으로 응답한다.
+```
+// UserException 처리
+@ExceptionHandler
+public ResponseEntity<ErrorResult> userExHandle(UserException e) {
+    log.error("[exceptionHandle] ex", e);
+    ErrorResult errorResult = new ErrorResult("USER-EX", e.getMessage());
+    return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+}
+// Exception 처리
+@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+@ExceptionHandler
+public ErrorResult exHandle(Exception e) {
+    log.error("[exceptionHandle] ex", e); 
+    return new ErrorResult("EX", "내부 오류");
+}
+```
+- @ExceptionHandler 는 마치 @RequestMapping 처럼 예외가 발생시 예외를 잡아다가 실행시키는 느낌.
+- @ControllerAdvice
+  - 해당 컨트롤러에서 발생한 예외에서만 처리가 제한되었는데, 이걸 조금 더 글로벌하게 설정하기 위한것.
+  - 클래스 만들어서 클래스 레벨에 @ControllerAdvice 붙이고, api만 할거니까 @RestControllerAdvice 라 붙이면 더 좋고.
+  - @ExceptionHandler 붙였던 메소드들 다 여기 클래스에 잘라 붙여넣기하고, 어느 컨트롤러에 타겟팅할것인지 설정해주면 됨.
+  - @ControllerAdvice(여기) 에다가 대상 컨트롤러 명시해주는데, 아무것도 명시하지 않으면 모든 컨트롤러에 적용.
+  - @ControllerAdvice(annotations = RestController.class) // 에노테이션 범위로 지정
+  - @ControllerAdvice("org.example.controllers") // 패지키 범위로 지정 // 이걸 많이 쓰는듯
+  - @ControllerAdvice(assignableTypes = {ControllerInterface.class, AbstractController.class}) // 특정 클래스로 지정.
+  
+
 
 #### 스프링 타입 컨버터
 
