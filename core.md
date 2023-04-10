@@ -103,9 +103,7 @@
     - 새로 고침 하면 request에 cooke:memberId=1이 계속 넘어옴
     - 로그아웃은 그냥 새로운 쿠키 만들어서 cookie.setMaxAge(0); 해서 response에 해당 쿠키를 저장시켜버리면 됨.
   - 2_ 세션 사용
-    - 세션 메커니즘
-      - <img width="400" alt="스크린샷 2023-04-10 오후 5 14 45" src="https://user-images.githubusercontent.com/93418349/230858984-48d82ba6-3c05-40b4-b33d-e7e014e1d4b6.png">
-      - <img width="400" alt="스크린샷 2023-04-10 오후 5 14 50" src="https://user-images.githubusercontent.com/93418349/230859024-d08c3a99-5030-463e-a38a-054b84cc239f.png">
+    - 세션 메커니즘 <br> <img width="600" alt="스크린샷 2023-04-10 오후 5 14 45" src="https://user-images.githubusercontent.com/93418349/230858984-48d82ba6-3c05-40b4-b33d-e7e014e1d4b6.png"> <br> <img width="600" alt="스크린샷 2023-04-10 오후 5 14 50" src="https://user-images.githubusercontent.com/93418349/230859024-d08c3a99-5030-463e-a38a-054b84cc239f.png">
     - HttpSession session = request.getSession(); // 세션 없으면 새로 생성
     - session.setAttribute("loginMember", loginMember); // 세션 저장소에 세션 저장 + 쿠키 발행
       - 위에서 new Cookie() 하고 reponse에 addCookie 했던게 이걸로 다 진행됨. 
@@ -119,14 +117,8 @@
       - 없으면 null 반환하고.
     - url에 지져분하게 sessionId가 표시되는거
       - application.properties에서 server.servlet.session.tracking-modes=cookie
-- 패키지 구조 설계
-  - 일단 크게 domain과 web을 분리
-  - 도메인 : 화면, UI, 기술 인프라 등등의 영역은 제외한 시스템이 구현해야 하는 핵심 비즈니스 업무 영역
-  - 둘의 의존관계가 단방향. web은 domain을 알지만, domain은 web을 모르게. web이 완전히 삭제되어도 domain에는 영향이 없게.
-  - web에는 ItemSaveForm, ItemEditForm, ItemController
-  - domain에는 Item, ItemRepository
-- spring 에서 제공하는 세션의 경우 가장 마지막 세션 접근 시간을 기준으로 30분이 지나면 WAS에서 해당 세션을 만료시켜줌. 당연히 타임아웃값 다르게 설정해줄 수 있고.
-- 세션저장소는 db에 두는게 아니라 메모리에 두기에 회원객체를 그대로 저장하는게 아니라, 정말 딱 로그인에 필요한 자주 쓰는 필드만 담은 객체를 핏하게 따로 두는게 좋긴함.
+    - 가장 마지막 세션 접근 시간을 기준으로 30분이 지나면 WAS에서 해당 세션을 만료시켜줌.
+    - 세션저장소는 db에 두는게 아니라 메모리에 두기에 회원객체를 그대로 저장하는게 아니라, 정말 딱 로그인에 필요한 자주 쓰는 필드만 담은 객체를 핏하게 따로 두는게 좋긴함.
 - DTO
   - Data Transfer Object: 계층간 데이터 전송을 위해 도메인 모델 대신 사용되는 객체
   - 순수하게 데이터를 저장. Getter, Setter가 있고 비즈니스 로직은 있어서는 안돼.
