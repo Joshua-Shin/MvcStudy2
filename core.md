@@ -131,26 +131,64 @@
 
 
 #### 로그인 처리2 : 필터, 인터셉터
-- 페이지마다 로그인 사용자만 접근 가능 하도록 만들려면, controller의 모든 핸들러 위에다가 로그인 여부를 체크하는 로직을 넣고, 로그인이 안되어있으면 리다이렉트 보내면 되겠지.
-- 그러나 모든 핸들러마다 다 이걸 넣으면 너무 지져분해지겠지.
-- 이는 공통관심사 로직이니 AOP로 처리할 수도 있지만, 필터와 인터셉터라는 더 강력한 기능이 있음
-- 서블릿 필터는 서블릿에서 제공하는 기능, 스프링 인터셉터는 Spring MVC가 제공하는 기능. 필터랑 인터셉터라는 개념은 다른 프레임워크나 뭐 다 사용하는 범용적인 개념
 - 필터
-  - 사실 WAS는 바로 서블릿을 호출하는게 아니라, 서블릿을 호출하기전 필터를 거치게 된다. 여기서 말하는 서블릿은 디스팻쳐서블릿.
-  - http요청 -> WAS -> 필터 -> 서블릿 -> 컨트롤러
-  - 때문에 이 필터를 등록해주고 여기에서 로그인 여부를 체크하는 로직을 넣으면 됨.
-  - 로그인 안되어있는 사용자가 허가 되지 않은 페이지에 url 찍고 들어왔을때 로그인페이지로 리다이렉트 보냈을때, 쿼리로 처음 접근 url을 기억해뒀다가 로그인 후 해당 url로 보내주면 사용성이 좋겠지.
-  - @Configuration 클래스에 @Bean 등록해서 필터 등록
+  - http요청 -> WAS -> 필터 -> 서블릿 -> 컨트롤러 
+  - 필터 인터페이스를 구현, 등록하면 서블릿 컨테이너가 필터를 싱글톤 객체로 생성 및 관리함.
+    - 구현: implements Filter 
+      - init(), doFilter(), destroy();
+      - doFilter에 핵심 로직을 담음.
+        - LoginCheckFilter 라면, 로그인이 필요한 페이지인가? 세션을 가지고 있는가? 해당 세션이 세션 저장소에 저장되어 있는가?
+        - 를 담아서, 만약 로그인이 필요한 페이지인데, 세션이 유효하지 않다면 response.sendRedirect("/login?redirectURL=" + requestURI); 해서
+        - 이전에 요청 했던 URI를 쿼리로 담아 리다이렉트 시킴. requestURI 얘는 request에서 가져온애.
+        - 이후 컨트롤러에서 @RequestParam("/") String requestURL로 해당 쿼리 받아서, 
+        - return "redirect:" + requestURL; 해주면 로그인 이후 원래 접근하려 했던 페이지로 리다이렉트 되겠지.
+        - chain.doFilter(request, response); 등록된 다른 필터가 있으면 그 다음 필터 호출해주고, 아니면 서블릿으로 넘어감.
+     - 등록: 스프링 빈으로 등록. @Configuration 클래스에 @Bean으로 잡아서 FilterRegistrationBean 에다가 .setFilter, .setOrder, .addUrlPattern("/*") 
 - 인터셉터
   - http요청 -> WAS -> 필터 -> 서블릿 -> 인터셉터 -> 컨트롤러
-  - spring mvc의 시작은 서블릿. 디스패처서블릿이야. 따라서 인터셉터도 서블릿 다음으로 오겠지.
-  - preHandle, postHandle, afterCompletion이 있는데, 
-  - preHandle : 핸들러어댑터 호출 직전에 호출됨. 예외 있으면 핸들러어댑터 호출 안하고 끝냄
-  - postHandle: 핸들러어댑터 다 처리되고 호출됨. 핸들러어댑터(핸들러)에서 예외 터지면 호출 안됨
-  - afterCompletion: 뷰 랜더링 마치고 http 응답 보내고 나서 호출됨. 단 핸들러에서 예외 터져도 호출됨. 어떤 예외가 발생했는지 로그로 찍어볼 수 있음
-  - spring mvc 전용이기에 필터보다 인터셉터가 여러모로 더 좋아
-  - @Configuration 클래스에 implements WebMvcConfigurer 구현해서 등록..
-- 스프링 인터셉터 기본 흐름 <br> <img width="819" alt="스크린샷 2023-04-06 오전 9 19 16" src="https://user-images.githubusercontent.com/93418349/230241942-723d30a6-f9f2-4ddb-be58-56a8931a3836.png">
+  - 스프링 인터셉터 기본 흐름 <br> <img width="800" alt="스크린샷 2023-04-06 오전 9 19 16" src="https://user-images.githubusercontent.com/93418349/230241942-723d30a6-f9f2-4ddb-be58-56a8931a3836.png">
+  
+  - 구현: implements HandlerInterceptor
+    ```
+    public interface HandlerInterceptor {
+        default boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {}
+        default void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModelAndView modelAndView) throws Exception {}
+        default void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {}
+     }
+     ```
+    - preHandle : 핸들러어댑터 호출 직전에 호출됨. 예외 있으면 핸들러어댑터 호출 안하고 끝냄
+    - postHandle: 핸들러어댑터 다 처리되고 호출됨. 핸들러어댑터(핸들러)에서 예외 터지면 호출 안됨
+    - afterCompletion: 뷰 랜더링 마치고 http 응답 보내고 나서 호출됨. 단 핸들러에서 예외 터져도 호출됨. 어떤 예외가 발생했는지 로그로 찍어볼 수 있음
+    - request와 response 뿐만 아니라 handler와 modelAndView, 예외까지도 응답 정보로 받을 수 있음
+    - 인자로 Object handler를 받는데, 이를 캐스팅 해서 사용함 
+      - HandlerMethod가 @Controller, @RequestMapping에 쓰던 핸들러
+      - ResourceHttpRequestHandler가 정정리소스때 사용되는 핸들러
+    - 로그인 체크 로직은 preHandler() 에만 하면 되겠지. 필터에서 doFilter()에 넣은거랑 비슷
+    - 다만, 필터에서는 화이트리스트 url 체크하고, try catch finally문 쓰고 했지만 얘는 등록과정중에 허용 url를 설정해버리니 페이지를 확인할 필요 없이 호출된 페이지를 타겟팅으로 핵심 로직만 진행시킬 수 있고, 예외 처리도 필터보다 훨씬 더 단일책임을 지게 깔끔하며 url 설정도 더 세심하게 할 수 있음.
+  - 등록
+    - 필터처럼 프링 빈에 등록하는 방식이 아니라, registry에 add하는 방식
+    ```
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+            registry.addInterceptor(new LogInterceptor())
+                    .order(1)
+                    .addPathPatterns("/**")
+                    .excludePathPatterns("/css/**", "/*.ico", "/error");
+       }
+       //...
+    }
+    ```
+  <!--
+  - ArgumentResolver
+    - 이름 그대로 매개변수를 어찌 처리할것이냐.
+    - 일반 객체가 놓이면 ArgumentResolver가 해당 객체에 @ModelAttrubute 적용시키는것처럼, 
+    - 공통된 매개변수 처리 로직에 대해 내가 따로 새로운 애노테이션을 만들어서 적용시킬 수 있어. 
+    - @SessionAttrubute Member loginMember(name = .... requied = false..) 어쩌구하는걸 그냥 @Login 같은걸로 만들어서 사용하면 좋은데..
+    - 이건 일단 스킵.
+  -->
+<!--
 - 다시 정리 
   - 로그인 처리는 '쿠키, 세션, 필터, 인터셉터' 이 네가지의 개념이 필요.
   - 나는 로그인 한 사용자입니다 라는것을 인증해줄 수 있는 기능이 쿠키.
@@ -160,7 +198,7 @@
   - 필터는 was 와 서블릿 사이에서, 인터셉터는 서블릿과 컨트롤러 사이에서.
   - 인터셉터가 페이지를 include, exclude 하기 더 편하고 이래저래 강력하기에 필터보다는 얘를 더 많이 씀
   - 더 요약하면, 쿠키는 여권, 세션id는 여권 번호, 필터와 인터셉터는 출입국심사대 같은거야.
-
+-->
 
 #### 예외 처리와 오류 페이지
 - try catch로 중간에 에러를 잡아주지 않으면 핸들러에서 WAS까지 에러가 돌라감
