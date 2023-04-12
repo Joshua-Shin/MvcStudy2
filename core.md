@@ -2,7 +2,6 @@
 - Object, user.username
 - List, users[0].username
 - Map, userMap['userA'].username
-
 - 리터럴
   - 문자는 기본적으로 ' ' 으로 감싸야함.
   - 그러나 공백없는 한 단어는 ' ' 생략 가능
@@ -12,7 +11,7 @@
 #### 타임리프 : 스프링 통합과 폼
 - 부모태그에 th:object="${item}" 라고 선언하면 th:field="${item.name}" 이라고 하는 대신 th:field="*{name}" 만 해줘도 됨.
 - th:field 선언하면 id, name, value 3가지를 한번에 만들어줌.
-- form 태그에서 수정 못하게 할 항목에는 disabled 해주면됨.
+- form 태그에서 수정 못하게 할 항목에는 disabled.
 - checkbox, radio 에서의 th:field와 th:value
   - th:value는 선택이 아니라 필수
   - th:field와 th:value가 일치하면 checked
@@ -30,12 +29,11 @@
 #### 메시지, 국제화
 - 메시지: 뷰에 입력하는 문자들을 하드코딩 하는게 아니라, message.properties 만들어서 메시지코드랑 메시지내용이랑 키 벨류로 매핑해둠.
 - 타임리프에서는 #{}
-- 스프링부트에서 해당 값을 가져오는 MessageSource 만들어줌. 그냥 Autowired만 해주면 됨. 근데 어차피 뷰로 바로 보낼 메시지들이라 자바코드내에서 확인할 필요가 있나. 아 테스트코드 작성할때.
+- 스프링부트에서 해당 값을 가져오는 MessageSource 만들어줌. 그냥 Autowired만 해주면 됨. 테스트코드 작성할때 유용.
 - 국제화: message.properties를 국가별로 다르게 관리해서 http accept-lang 이나 locale에 따라 그에 맞는것을 보내주면 변경되겠지. 
 - ms.getMessage(code, args, defaultMessage, locale) 호출하면, locale에 맞는 message.properites 찾아서 code에 매핑된 문자열 벨류값 반환함
 - **Test 코드 예외처리**
   - Assertions.assertThatThrownBy( () -> function()).isInstanceOf(예외.class);
-
 
 #### 검증1 : Validation
 - BindingResult
@@ -66,9 +64,6 @@
 #### 검증2 : Bean Validation
 - 객체 필드 위에다가 에노테이션 명시하면 그에 맞게 검증해주고, 검증 안맞으면 bindingResult에 에러내용 넣어줌. 정말 편하네
 - @NotBlank(message="공백이면 안돼요"), @NotNull, @Range(min=1000, max=100000), @Max(9999),, 등등 이메일, 신용카드번호 등등 웬만한 유형은 다 있음.
-- 오류가 발생했을떄 에러메시지를 내가 따로 명시해줘도 되고, spring에서 해당 에노테이션에 맞는 기본 메시지도 등록되어있으며,
-- error.properties에서 단계별로 메시지들을 관리해놔도 됨.
-  - NotBlank.객체.필드명=상품의 이름이 공백이면 안됩니다
 - 글로벌 오류는 그냥 자바 코드로 bindingResult에 수동으로 에러 입력해주는게 나음.
   ```        
   if (item.getPrice() != null && item.getQuantity() != null) {
@@ -81,10 +76,9 @@
 - 등록할때의 필드 검증 사항과 수정할떄의 필드 검증 사항이 다를 경우. (사실 다를 경우가 훨씬 많음)
   - ItemSaveForm, ItemUpdateForm, Item을 따로 분리.
   - @ModelAttribute("item") ItemSaveForm form
-    - @ModelAttribute에 따로 명시해주는거 주의. 따로 명시 안해주면 클래스명 맨 앞글자만 소문자로 변경된 itemSaveForm을 키값으로 model에 담김.
 - @ModelAttribute vs @RequestBody
   - @ModelAttribute 는 각각의 필드에 타입 변환 시도. 성공하면 다음으로. 실패하면 typeMismatch 로 FieldError 추가. 변환에 성공한 필드만 BeanValidation 적용.
-  - @RequestBody는 일단 http body로 요청이 들어온것을 http 메시지 컨버터를 통해 컨버팅하고, 이 json을 객체로 바꾼후에, 검증이 진행되는데, json이 객체로 바뀌지 않으면 예를 들어 입력 타입 자체가 다를 경우 검증이 진행이 안됨. 애초에 컨트롤러가 실행이 안되는 상황이 되어버림. 때문에 이 상황에서는.. 어떻게 해야하는지 뒤에 예외처리 파트에서 나온대.
+  - @RequestBody는 일단 http body로 요청이 들어온것을 http 메시지 컨버터를 통해 컨버팅하고, 이 json을 객체로 바꾼후에, 검증이 진행되는데, json이 객체로 바뀌지 않으면 예를 들어 입력 타입 자체가 다를 경우 검증이 진행이 안됨. 애초에 컨트롤러가 실행이 안되는 상황이 되어버림. 때문에 이 상황에서는 api 예외처리.
   
 #### 로그인 처리1 : 쿠키, 세션
 - Member 에 loginId, password 필드 추가
@@ -115,7 +109,7 @@
       - request.getSession() 해서 세션 가져오고
       - session.getAttribute(...) 해서 세션에 저장된 value 가져오고 하는걸 한번에 해줌.
       - 없으면 null 반환하고.
-    - url에 지져분하게 sessionId가 표시되는거
+    - url에 지져분하게 sessionId가 표시되는거 해결법
       - application.properties에서 server.servlet.session.tracking-modes=cookie
     - 가장 마지막 세션 접근 시간을 기준으로 30분이 지나면 WAS에서 해당 세션을 만료시켜줌.
     - 세션저장소는 db에 두는게 아니라 메모리에 두기에 회원객체를 그대로 저장하는게 아니라, 정말 딱 로그인에 필요한 자주 쓰는 필드만 담은 객체를 핏하게 따로 두는게 좋긴함.
@@ -161,12 +155,12 @@
     - afterCompletion: 뷰 랜더링 마치고 http 응답 보내고 나서 호출됨. 단 핸들러에서 예외 터져도 호출됨. 어떤 예외가 발생했는지 로그로 찍어볼 수 있음
     - request와 response 뿐만 아니라 handler와 modelAndView, 예외까지도 응답 정보로 받을 수 있음
     - 인자로 Object handler를 받는데, 이를 캐스팅 해서 사용함 
-      - HandlerMethod가 @Controller, @RequestMapping에 쓰던 핸들러
-      - ResourceHttpRequestHandler가 정정리소스때 사용되는 핸들러
+      - HandlerMethod : @Controller, @RequestMapping에 쓰던 핸들러
+      - ResourceHttpRequestHandler : 정정리소스때 사용되는 핸들러
     - 로그인 체크 로직은 preHandler() 에만 하면 되겠지. 필터에서 doFilter()에 넣은거랑 비슷
     - 다만, 필터에서는 화이트리스트 url 체크하고, try catch finally문 쓰고 했지만 얘는 등록과정중에 허용 url를 설정해버리니 페이지를 확인할 필요 없이 호출된 페이지를 타겟팅으로 핵심 로직만 진행시킬 수 있고, 예외 처리도 필터보다 훨씬 더 단일책임을 지게 깔끔하며 url 설정도 더 세심하게 할 수 있음.
   - 등록
-    - 필터처럼 프링 빈에 등록하는 방식이 아니라, registry에 add하는 방식
+    - 필터처럼 스프링 빈에 등록하는 방식이 아니라, registry에 add하는 방식
     ```
     @Configuration
     public class WebConfig implements WebMvcConfigurer {
