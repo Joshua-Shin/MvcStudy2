@@ -82,7 +82,7 @@
   
 #### 로그인 처리1 : 쿠키, 세션
 - Member 에 loginId, password 필드 추가
-- MemberRepository에 Member finByLoginId(String loginId) 메소드 추가
+- MemberRepository에 Member findByLoginId(String loginId) 메소드 추가
   - return findAll().filter(m -> m.getLoginId().equals(loginId)).findFirst();
 - LoginService
   - Member login(String loginId, String password) 
