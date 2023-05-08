@@ -39,7 +39,16 @@
 - BindingResult
   - @ModelAttribute로 잡은 객체에 요청값이 적절히 안들어왔을 경우 에러 사항들을 bindingResult에 담아줌.
   - 꼭! @ModelAttribute 매개변수 바로 다음에 선언되어야함.
-  - bindingResult.addError() 를 통해 ObjectError와 FieldError 등을 수동으로 추가할 수 있음.
+  - bindingResult.reject()
+    - 글로벌오류 수동 추가
+    - void reject(String errorCode);
+    - void reject(String errorCode, String defaultMessage);
+    - void reject(String errorCode, Object[] errorArgs, String defaultMessage);
+  - bindingResult.rejectValue()
+    - 필드별 오류 수동 추가
+    - void rejectValue(String field, String errorCode);
+    - void rejectValue(String field, String errorCode, String defaultMessage);
+    - void rejectValue(String field, String errorCode, Object[] errorArgs, String defaultMessage);
   - 해서 메소드 안쪽 본격 로직이 시작되기 전에 if(bindingResult.hasError()) 를 검사하며 에러가 있을 경우 실패 로직을 처리해버림.
   - 타임리프 스프링 검증 오류 통합 기능
     - #fields : #fields 로 BindingResult 가 제공하는 검증 오류에 접근할 수 있다.
